@@ -63,6 +63,9 @@ BlockHeader_t *Allocator::getBlock(const size_t size) const {
 }
 
 void Allocator::freeBlock(void *block) {
+    if (!block) {
+        return;
+    }
     std::lock_guard guard(globalAllocatorMutex);
     BlockHeader_t *currentBlock = reinterpret_cast<BlockHeader_t *>(block) - 1;
     void *programBreak = sbrk(0);
