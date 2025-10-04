@@ -61,3 +61,30 @@ BlockHeader_t *Allocator::getBlock(const size_t size) const {
     }
     return nullptr;
 }
+
+void Allocator::freeBlock(void *block) {
+    std::lock_guard guard(globalAllocatorMutex);
+    BlockHeader_t *currentBlock = reinterpret_cast<BlockHeader_t *>(block) - 1;
+    void *programBreak = sbrk(0);
+    // Is the current block allocated before program break?
+    if ((currentBlock->size) + static_cast<char *>(block) == programBreak) {
+        // Before releasing memory we need to set the tail to the previous block.
+        if (head == tail) {
+            head = tail = nullptr;
+        } else {
+            BlockHeader_t *currentPtr = head;
+            while (currentPtr) {
+                if (currentPtr->next == tail) {
+                    currentPtr->next = nullptr;
+                    tail = currentPtr;
+                }
+                currentPtr = currentPtr->next;
+            }
+        }
+        const size_t totalSize = currentBlock->size + sizeof(BlockHeader_t);
+        sbrk(-1 * totalSize);
+        return;
+    }
+    // Otherwise mark the block as free.
+    currentBlock->isFree = 1;
+}

@@ -29,10 +29,13 @@ public:
 
     void *allocateBlock(size_t size);
 
-    BlockHeader_t *head{nullptr};
-    BlockHeader_t *tail{nullptr};
+    void freeBlock(void *block);
 
 private:
+    BlockHeader_t *head{nullptr};
+
+    BlockHeader_t *tail{nullptr};
+
     BlockHeader_t *getBlock(size_t size) const;
 };
 
