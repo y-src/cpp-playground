@@ -1,12 +1,8 @@
-#include <iostream>
-
 #include "Allocator.h"
 
 int main() {
-    Allocator allocator;
-    void *firstBlock = allocator.allocateBlock(10);
-    void *secondBlock = allocator.allocateBlock(10);
-    allocator.freeBlock(firstBlock);
-    allocator.freeBlock(secondBlock);
+    Allocator allocator(10);
+    Allocator allocator2(100);
+
     return 0;
 }

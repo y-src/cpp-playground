@@ -13,7 +13,7 @@ union BlockHeader {
     struct {
         size_t size;
         unsigned isFree;
-        BlockHeader *next;
+        BlockHeader* next;
     };
 
     BlockAlignment stub;
@@ -22,21 +22,29 @@ union BlockHeader {
 typedef BlockHeader BlockHeader_t;
 
 class Allocator {
-public:
-    Allocator();
+   public:
+    explicit Allocator(const size_t size);
 
     ~Allocator();
 
-    void *allocateBlock(size_t size);
+    Allocator(const Allocator& other);
 
-    void freeBlock(void *block);
+    Allocator& operator=(const Allocator& other) = delete;  // TODO: first need realloc
 
-private:
-    BlockHeader_t *head{nullptr};
+   private:
+    size_t blockSize;
 
-    BlockHeader_t *tail{nullptr};
+    void* block;
 
-    BlockHeader_t *getBlock(size_t size) const;
+    static BlockHeader_t* head;
+
+    static BlockHeader_t* tail;
+
+    void* allocateBlock(const size_t size);
+
+    void freeBlock(void* block);
+
+    BlockHeader_t* getBlock(size_t size) const;
 };
 
-#endif //CPP_PLAYGROUND_ALLOCATOR_H
+#endif  // CPP_PLAYGROUND_ALLOCATOR_H

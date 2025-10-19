@@ -1,0 +1,44 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		},
+	],
+	"build_systems": [
+		{
+			"name": "cmake: build & run",
+			"shell_cmd": "(mkdir build || true) && cd build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. && cmake --build . && echo '\n' && ./cpp_playground",
+			"selector": "source.c++",
+			"keyfiles": ["CMakeLists.txt"],
+		},
+		{
+			"name": "build&run manually",
+			"shell_cmd": "c++ -std=c++20 main.cpp Allocator.h Allocator.cpp && ./a.out",
+			"selector": "source.c++",
+		}
+	],
+	"debugger_tasks": [
+		{
+			"name": "Compile",
+			"shell_cmd": "(mkdir build || true) && cd build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. && cmake --build .",
+		},
+	],
+	"debugger_configurations": [
+		{
+			"name": "C++ (External Terminal)",
+			"type": "lldb",
+			"request": "launch",
+			"pre_debug_task": "Compile",
+			"program": "${project_path}/build/cpp_playground",
+			"cwd": "${project_path}",
+			"terminal": "external",
+		},
+		{
+			"name": "C++ (Attach)",
+			"type": "lldb",
+			"request": "attach",
+			"pid": "${command_pick_process}"
+		},
+	],
+}

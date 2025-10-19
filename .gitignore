@@ -42,3 +42,12 @@
 
 # JetBrains
 .idea
+
+# builds
+build/
+.cache/
+cmake-build-debug/
+
+# sublime
+*.sublime-*
+!*.sublime-project
