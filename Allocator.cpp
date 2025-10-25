@@ -14,16 +14,46 @@ BlockHeader_t* Allocator::head{nullptr};
 BlockHeader_t* Allocator::tail{nullptr};
 
 Allocator::Allocator(const size_t size) {
-    block = allocateBlock(size);
     blockSize = size;
+    block = allocateBlock(blockSize);
 };
 
 Allocator::~Allocator() { freeBlock(block); };
 
 Allocator::Allocator(const Allocator& other) : blockSize{other.blockSize}, block{allocateBlock(other.blockSize)} {
-    char* p = static_cast<char*>(other.block);
-    char* r = static_cast<char*>(block);
-    for (int i = 0; i != blockSize; ++i) r[i] = p[i];
+    copyBlock(block, other.block, blockSize);
+};
+
+Allocator::Allocator(Allocator&& other) : blockSize{other.blockSize}, block{other.block} {
+    other.blockSize = 0;
+    other.block = nullptr;
+};
+
+Allocator& Allocator::operator=(Allocator&& other) {
+    blockSize = other.blockSize;
+    block = other.block;
+    other.blockSize = 0;
+    other.block = nullptr;
+    return *this;
+};
+
+void Allocator::copyBlock(void* to, void* from, const size_t size) {
+    std::lock_guard guard(globalAllocatorMutex);
+    char* p = static_cast<char*>(from);
+    char* r = static_cast<char*>(to);
+    // this is slow, more iterations than using memcpy (which uses long)
+    for (int i = 0; i != size; ++i) r[i] = p[i];
+};
+
+Allocator& Allocator::operator=(const Allocator& other) {
+    // free after, just in case allocation failure
+    void* _block = allocateBlock(other.blockSize);
+    freeBlock(block);
+    blockSize = other.blockSize;
+    block = _block;
+    // copy the contents
+    copyBlock(block, other.block, blockSize);
+    return *this;
 };
 
 void* Allocator::allocateBlock(const size_t size) {
@@ -59,7 +89,7 @@ void* Allocator::allocateBlock(const size_t size) {
     // This block is now tail.
     tail = blockHeader;
     return blockHeader + 1;
-}
+};
 
 BlockHeader_t* Allocator::getBlock(const size_t size) const {
     BlockHeader_t* currentBlock = head;
@@ -73,7 +103,7 @@ BlockHeader_t* Allocator::getBlock(const size_t size) const {
         currentBlock = currentBlock->next;
     }
     return nullptr;
-}
+};
 
 void Allocator::freeBlock(void* block) {
     if (!block) {
@@ -104,4 +134,4 @@ void Allocator::freeBlock(void* block) {
     }
     // Otherwise mark the block as free.
     currentBlock->isFree = 1;
-}
+};

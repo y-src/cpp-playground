@@ -25,11 +25,17 @@ class Allocator {
    public:
     explicit Allocator(const size_t size);
 
+    Allocator() : Allocator(0) {};
+
     ~Allocator();
 
     Allocator(const Allocator& other);
 
-    Allocator& operator=(const Allocator& other) = delete;  // TODO: first need realloc
+    Allocator& operator=(const Allocator& other);
+
+    Allocator(Allocator&& other);
+
+    Allocator& operator=(Allocator&& other);
 
    private:
     size_t blockSize;
@@ -45,6 +51,8 @@ class Allocator {
     void freeBlock(void* block);
 
     BlockHeader_t* getBlock(size_t size) const;
+
+    static void copyBlock(void* to, void* from, const size_t size);
 };
 
 #endif  // CPP_PLAYGROUND_ALLOCATOR_H
